@@ -15,7 +15,6 @@ from torch.optim.optimizer import Optimizer
 # To this:
 import torch.optim as optim
 
-# Configure logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -23,14 +22,15 @@ logger = logging.getLogger(__name__)
 db = wrds.Connection()
 
 class AlphaPortfolioData(Dataset):
-    
     def __init__(self, start_year=2014, end_year=2020, final_year=2016, lookback=12, G=2):
         super().__init__()
         self.lookback = lookback
-        self.G = G  # Number of assets to long/short
+        self.G = G
         self.merged, self.final_data = self._load_wrds_data(start_year, end_year, final_year)
-        # self.sequences, self.future_returns, self.masks = self._create_sequences()
-        # self._validate_data_shapes()
+        self.unique_permnos = sorted(self.final_data['permno'].unique())
+        self.global_max_assets = len(self.unique_permnos)
+        self.permno_to_idx = {permno: idx for idx, permno in enumerate(self.unique_permnos)}
+        self.sequences, self.future_returns, self.masks = self._create_sequences()
 
     def _load_wrds_data(self, start_year, end_year, final_year):
 
@@ -129,83 +129,68 @@ class AlphaPortfolioData(Dataset):
         
         return merged, final_data
 
+
     def _create_sequences(self):
-        data = self.data
+        data = self.final_data
         lookback = self.lookback
         unique_dates = pd.to_datetime(data['date'].unique())
-        unique_assets = data['permno'].unique()
-        global_max_assets  = data.groupby('year')['permno'].nunique().iloc[-1]
-        
+        unique_dates_sorted = np.sort(unique_dates)
+        num_features = 6  # Based on []'permno', 'ret', 'prc', 'vol', 'mktcap', 'saleq']
+
         sequences = []
         future_returns = []
         masks = []
-        min_assets = 2 * self.G
-        batch_info = []
 
-        # First pass: collect valid batches
-        for date_idx in range(len(unique_dates) - 2 * lookback):
-            hist_start = unique_dates[date_idx]
-            hist_end = unique_dates[date_idx + lookback - 1]
-            future_start = unique_dates[date_idx + lookback]
-            future_end = unique_dates[date_idx + 2 * lookback - 1]
+        for start_idx in tqdm(range(len(unique_dates_sorted) - 2 * lookback+1)):
+            hist_start = unique_dates_sorted[start_idx]
+            hist_end = unique_dates_sorted[start_idx + lookback - 1]
+            future_start = unique_dates_sorted[start_idx + lookback]
+            future_end = unique_dates_sorted[start_idx + 2 * lookback-1]
 
-            batch_assets = []
-            hist_features = []
-            fwd_returns = []
-            
-            for asset in unique_assets:
-                asset_hist = data[
-                    (data['permno'] == asset) & 
-                    (data['date'].between(hist_start, hist_end))
+            print(f'Hist start: {hist_start}, Hist end: {hist_end}, Future start: {future_start}, Future end: {future_end}')
+
+            # Initialize batch arrays with zeros
+            batch_features = np.zeros((self.global_max_assets, lookback, num_features))
+            batch_returns = np.zeros((self.global_max_assets, lookback))
+            batch_mask = np.zeros(self.global_max_assets, dtype=bool)
+
+            for permno in self.unique_permnos:
+                idx = self.permno_to_idx[permno]
+
+                # Historical data for the current window
+                hist_data = data[
+                    (data['permno'] == permno) &
+                    (data['date'] >= hist_start) &
+                    (data['date'] <= hist_end)
                 ].sort_values('date')
-                
-                asset_future = data[
-                    (data['permno'] == asset) & 
-                    (data['date'].between(future_start, future_end))
+
+                # Future returns for the next window
+                future_data = data[
+                    (data['permno'] == permno) &
+                    (data['date'] >= future_start) &
+                    (data['date'] <= future_end)
                 ]['ret'].values
-                
-                if len(asset_hist) == lookback and len(asset_future) == lookback:
-                    features = asset_hist[['ret', 'prc', 'vol', 'mktcap', 'saleq']].values
-                    hist_features.append(features)
-                    fwd_returns.append(asset_future)
-                    batch_assets.append(asset)
 
-            if len(hist_features) >= min_assets:
-                batch_info.append({
-                    'features': np.stack(hist_features),
-                    'returns': np.stack(fwd_returns),
-                    'num_assets': len(hist_features)
-                })
+                # Check if both periods have complete data
+                if len(hist_data) == lookback and len(future_data) == lookback:
+                    features = hist_data[['permno', 'ret', 'prc', 'vol', 'mktcap', 'saleq']].values
+                    batch_features[idx] = features
+                    batch_returns[idx] = future_data
+                    batch_mask[idx] = True
 
-        # Find global max assets across all valid batches
-        if not batch_info:
-            return torch.empty(0), torch.empty(0), torch.empty(0)
-        
-        global_max_assets = max(b['num_assets'] for b in batch_info)
-        features_dim = batch_info[0]['features'].shape[-1]
+            sequences.append(batch_features)
+            future_returns.append(batch_returns)
+            masks.append(batch_mask)
 
-        # Second pass: pad to global max
-        for batch in batch_info:
-            num_assets = batch['num_assets']
-            
-            # Features: (assets, lookback, features)
-            padded_features = np.zeros((global_max_assets, lookback, features_dim))
-            padded_features[:num_assets] = batch['features']
-            
-            # Returns: (assets, lookback)
-            padded_returns = np.zeros((global_max_assets, lookback))  # Fix 1: 2D padding
-            padded_returns[:num_assets] = batch['returns']
-            
-            # Mask: (assets,)
-            mask = np.zeros(global_max_assets, dtype=bool)
-            mask[:num_assets] = True
+        # Convert to tensors
+        sequences_tensor = torch.tensor(np.array(sequences), dtype=torch.float32)
+        future_returns_tensor = torch.tensor(np.array(future_returns), dtype=torch.float32)
+        masks_tensor = torch.tensor(np.array(masks), dtype=torch.bool)
 
-            sequences.append(padded_features)
-            future_returns.append(padded_returns)
-            masks.append(mask)
+        return sequences_tensor, future_returns_tensor, masks_tensor
 
-        return (
-            torch.as_tensor(np.array(sequences), dtype=torch.float32),  # (time, assets, lookback, features)
-            torch.as_tensor(np.array(future_returns), dtype=torch.float32),  # (time, assets, lookback)
-            torch.as_tensor(np.array(masks), dtype=torch.bool)  # (time, assets)
-        )
+    def __len__(self):
+        return len(self.sequences)
+
+    def __getitem__(self, idx):
+        return self.sequences[idx], self.future_returns[idx], self.masks[idx]
