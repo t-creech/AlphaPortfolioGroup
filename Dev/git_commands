@@ -1,0 +1,17 @@
+# Navigate to repo
+cd ~/projects/alpha-portfolio
+
+# Check changes
+git status
+
+# Stage the file
+git add src/AlphaPortfolioData.py
+
+# Commit
+git commit -m "Fix padding logic for permno alignment"
+
+# Pull latest changes
+git pull origin main
+
+# Push to remote
+git push origin main
