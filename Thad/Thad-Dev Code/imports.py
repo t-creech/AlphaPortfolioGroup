@@ -28,7 +28,7 @@ def setup_file_logger(log_file):
     logger.setLevel(logging.INFO)
 
 # Set up a file logger.
-log_filename = "/Users/dkewlan/My WorkSpace/Final Project/training.log"
+log_filename = "training.log"
 setup_file_logger(log_filename)
 logger.info("File logger initialized.")
 
