@@ -7,8 +7,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 lookback = 12
-start_year = 2017
-final_year = 2018
+start_year = 2010
+final_year = 2012
 end_year = 2020
 T = 12 # number of rebalancing steps per episode
 model_G = 10 # number of assets selected for long/short in portfolio generation
