@@ -29,6 +29,7 @@ model = AlphaPortfolioModel(num_features=num_features, lookback=lookback,
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device: {device}")
 model.to(device)
+optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
 # Iterative training: for each round, train on its training set and validate on its validation set.
 for round_idx in range(num_training_blocks):
@@ -42,13 +43,10 @@ for round_idx in range(num_training_blocks):
                                      None,  # if validation future returns aren’t needed
                                      data_pipeline.val_masks[round_idx])
     
-    train_loader = DataLoader(train_round_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_round_dataset, batch_size=batch_size, shuffle=False)
-    
     # Train model on this round (train_model_sequential should accept a validation loader too)
-    train_model_sequential(train_loader, model, num_epochs=num_epochs, learning_rate=1e-4,
-                           device=device, plots_dir='plots', validation_loader=val_loader)
-    evaluator = AlphaPortfolioEvaluator(val_loader, model, device=device, G=model_G)
+    train_model_sequential(train_round_dataset, model, num_epochs=num_epochs, learning_rate=1e-4,
+                           device=device, plots_dir='plots')
+    evaluator = AlphaPortfolioEvaluator(val_round_dataset, model, device=device, G=model_G)
     model_sharpes = evaluator.test_model()         # Tests your deep RL model
     baseline_returns, baseline_sharpe = evaluator.evaluate_baseline()  # Baseline evaluation
     logger.info(f"Baseline Sharpe ratio on test set: {baseline_sharpe:.4f}")

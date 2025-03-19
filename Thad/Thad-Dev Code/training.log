@@ -29,37 +29,28 @@
 2025-03-18 22:44:38,203 - INFO - Training round 0 contains 31159 training samples.
 2025-03-18 22:44:38,204 - INFO - Training round 0 contains data from 1975 to 1984.
 2025-03-18 22:44:38,204 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
-2025-03-19 00:16:57,137 - INFO - File logger initialized.
-2025-03-19 00:16:58,332 - INFO - Dataset initialized: 4 training rounds created.
-2025-03-19 00:16:58,332 - INFO - Dataset initialized: 4 validation rounds created.
-2025-03-19 00:16:58,332 - INFO - Dataset initialized: 37250 test rounds created.
-2025-03-19 00:16:58,332 - INFO - Training round 0 contains 31159 training samples.
-2025-03-19 00:16:58,333 - INFO - Training round 0 contains data from 1975 to 1984.
-2025-03-19 00:16:58,334 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
-2025-03-19 00:18:45,942 - INFO - File logger initialized.
-2025-03-19 00:18:47,076 - INFO - Dataset initialized: 4 training rounds created.
-2025-03-19 00:18:47,077 - INFO - Dataset initialized: 4 validation rounds created.
-2025-03-19 00:18:47,077 - INFO - Dataset initialized: 37250 test rounds created.
-2025-03-19 00:18:47,077 - INFO - Training round 0 contains 31159 training samples.
-2025-03-19 00:18:47,079 - INFO - Training round 0 contains data from 1975 to 1984.
-2025-03-19 00:18:47,079 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
-2025-03-19 00:20:16,144 - INFO - File logger initialized.
-2025-03-19 00:20:17,253 - INFO - Dataset initialized: 4 training rounds created.
-2025-03-19 00:20:17,253 - INFO - Dataset initialized: 4 validation rounds created.
-2025-03-19 00:20:17,254 - INFO - Dataset initialized: 37250 test rounds created.
-2025-03-19 00:20:17,254 - INFO - Training round 0 contains 31159 training samples.
-2025-03-19 00:20:17,255 - INFO - Training round 0 contains data from 1975 to 1984.
-2025-03-19 00:20:17,257 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
-2025-03-19 00:29:44,785 - INFO - File logger initialized.
-2025-03-19 00:29:45,824 - INFO - Dataset initialized: 4 training rounds created.
-2025-03-19 00:29:45,824 - INFO - Dataset initialized: 4 validation rounds created.
-2025-03-19 00:29:45,824 - INFO - Dataset initialized: 37250 test rounds created.
-2025-03-19 00:29:45,824 - INFO - Training round 0 contains 31159 training samples.
-2025-03-19 00:29:45,826 - INFO - Training round 0 contains data from 1975 to 1984.
-2025-03-19 00:29:45,826 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
-2025-03-19 00:46:16,179 - INFO - Created sequences tensor shape: torch.Size([97, 12, 910, 12, 57])
-2025-03-19 00:46:16,180 - INFO - Created future_returns tensor shape: torch.Size([97, 12, 910])
-2025-03-19 00:46:16,180 - INFO - Created masks tensor shape: torch.Size([97, 12, 910])
-2025-03-19 00:46:16,374 - INFO - Training round 1 contains 31731 training samples.
-2025-03-19 00:46:16,377 - INFO - Training round 1 contains data from 1985 to 1994.
-2025-03-19 00:46:16,378 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
+2025-03-18 23:22:32,717 - INFO - File logger initialized.
+2025-03-18 23:22:33,869 - INFO - Dataset initialized: 4 training rounds created.
+2025-03-18 23:22:33,870 - INFO - Dataset initialized: 4 validation rounds created.
+2025-03-18 23:22:33,870 - INFO - Dataset initialized: 37250 test rounds created.
+2025-03-18 23:22:33,870 - INFO - Training round 0 contains 31159 training samples.
+2025-03-18 23:22:33,871 - INFO - Training round 0 contains data from 1975 to 1984.
+2025-03-18 23:22:33,872 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
+2025-03-18 23:45:08,937 - INFO - Created sequences tensor shape: torch.Size([97, 12, 910, 12, 57])
+2025-03-18 23:45:08,941 - INFO - Created future_returns tensor shape: torch.Size([97, 12, 910])
+2025-03-18 23:45:08,941 - INFO - Created masks tensor shape: torch.Size([97, 12, 910])
+2025-03-18 23:45:09,032 - INFO - Training round 1 contains 31731 training samples.
+2025-03-18 23:45:09,038 - INFO - Training round 1 contains data from 1985 to 1994.
+2025-03-18 23:45:09,044 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
+2025-03-19 00:07:43,377 - INFO - Created sequences tensor shape: torch.Size([97, 12, 910, 12, 57])
+2025-03-19 00:07:43,381 - INFO - Created future_returns tensor shape: torch.Size([97, 12, 910])
+2025-03-19 00:07:43,381 - INFO - Created masks tensor shape: torch.Size([97, 12, 910])
+2025-03-19 00:07:43,461 - INFO - Training round 2 contains 30205 training samples.
+2025-03-19 00:07:43,468 - INFO - Training round 2 contains data from 1995 to 2004.
+2025-03-19 00:07:43,473 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
+2025-03-19 00:29:51,267 - INFO - Created sequences tensor shape: torch.Size([97, 12, 910, 12, 57])
+2025-03-19 00:29:51,268 - INFO - Created future_returns tensor shape: torch.Size([97, 12, 910])
+2025-03-19 00:29:51,268 - INFO - Created masks tensor shape: torch.Size([97, 12, 910])
+2025-03-19 00:29:51,347 - INFO - Training round 3 contains 35524 training samples.
+2025-03-19 00:29:51,351 - INFO - Training round 3 contains data from 2005 to 2014.
+2025-03-19 00:29:51,352 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
