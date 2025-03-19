@@ -45,7 +45,7 @@ for round_idx in range(num_training_blocks):
     
     # Train model on this round (train_model_sequential should accept a validation loader too)
     train_model_sequential(train_round_dataset, model, optimizer, num_epochs=num_epochs, learning_rate=1e-4,
-                           device=device, plots_dir='plots')
+                           device=device, plots_dir='plots', patience=5)
     evaluator = AlphaPortfolioEvaluator(val_round_dataset, model, device=device, G=model_G)
     model_sharpes = evaluator.test_model()         # Tests your deep RL model
     baseline_returns, baseline_sharpe = evaluator.evaluate_baseline()  # Baseline evaluation
