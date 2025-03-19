@@ -5,7 +5,7 @@ from data_pipeline import *
 
 
 # ------------------------- TRAINING PIPELINE -------------------------
-def train_model_sequential(dataset, model, num_epochs=10, batch_size=1, plots_dir='plots', patience=5):
+def train_model_sequential(dataset, model, optimizer num_epochs=10, batch_size=1, plots_dir='plots', patience=5):
     """
     Each episode consists of T sequential rebalancing steps.
     For each step t:
