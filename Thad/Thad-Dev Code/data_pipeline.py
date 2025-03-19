@@ -162,8 +162,7 @@ class AlphaPortfolioData(Dataset):
         T = self.T
         unique_dates = pd.to_datetime(data['date'].unique())
         unique_dates_sorted = np.sort(unique_dates)
-        num_features = self.num_features  # Here we use: 'permno', 'ret', 'prc', 'vol', 'mktcap', 'saleq'
-        
+        num_features = self.num_features 
         episodes_states = []
         episodes_fwd = []
         episodes_masks = []
@@ -192,7 +191,7 @@ class AlphaPortfolioData(Dataset):
                         (data['date'] == unique_dates_sorted[fwd_index])
                     ]
                     if len(hist_data) == lookback and len(fwd_data) == 1:
-                        features_list = [col for col in hist_data.columns if col not in ['date']]
+                        features_list = [col for col in hist_data.columns if col not in ['date', 'permno']]
                         features = hist_data[features_list].values
                         step_states[idx] = features
                         step_fwd[idx] = fwd_data['ret'].values[0]
