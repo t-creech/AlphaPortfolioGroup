@@ -5,7 +5,7 @@ from data_pipeline import *
 
 
 # ------------------------- TRAINING PIPELINE -------------------------
-def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, device='cpu', batch_size=1, plots_dir='plots'):
+def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, device='cpu', batch_size=1, plots_dir='plots', patience=5):
     """
     Each episode consists of T sequential rebalancing steps.
     For each step t:
@@ -22,6 +22,8 @@ def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, de
     
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     all_epoch_avg_sharpes = []
+    best_sharpe = float('-inf')
+    epochs_no_improve = 0
     
     for epoch in range(num_epochs):
         logger.info(f"--- Starting Epoch {epoch+1}/{num_epochs} ---")
@@ -66,10 +68,22 @@ def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, de
             epoch_sharpes.append(sharpe_ratio.item())
             episode_episode_sharpes.append(sharpe_ratio.item())
             
-    
         epoch_avg = np.mean(epoch_sharpes)
         all_epoch_avg_sharpes.append(epoch_avg)
         logger.info(f"Epoch {epoch+1}: Average Sharpe Ratio = {epoch_avg:.4f}")
+
+        # Early Stopping Check
+        if epoch_avg > best_sharpe:
+            best_sharpe = epoch_avg
+            epochs_no_improve = 0
+            logger.info(f"New best model saved with Sharpe Ratio: {epoch_avg:.4f}")
+        else:
+            epochs_no_improve += 1
+            logger.info(f"No improvement for {epochs_no_improve} epochs.")
+
+            if epochs_no_improve >= patience:
+                logger.info(f"Early stopping triggered. Best Sharpe Ratio: {best_sharpe:.4f}")
+                break
     
     # After all epochs, plot the convergence of epoch-average Sharpe ratios.
     plot_epoch_path = os.path.join(plots_dir, "epoch_convergence.png")
