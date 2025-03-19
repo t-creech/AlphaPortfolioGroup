@@ -8,7 +8,6 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import math
 import logging
-import wrds
 import matplotlib.pyplot as plt
 import os
 

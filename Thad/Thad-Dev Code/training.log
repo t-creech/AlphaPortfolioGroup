@@ -54,3 +54,10 @@
 2025-03-19 00:29:51,347 - INFO - Training round 3 contains 35524 training samples.
 2025-03-19 00:29:51,351 - INFO - Training round 3 contains data from 2005 to 2014.
 2025-03-19 00:29:51,352 - INFO - Creating 97 sequential episodes (T = 12 time steps each).
+2025-03-19 00:45:23,374 - INFO - File logger initialized.
+2025-03-19 00:45:24,456 - INFO - Dataset initialized: 4 training rounds created.
+2025-03-19 00:45:24,456 - INFO - Dataset initialized: 4 validation rounds created.
+2025-03-19 00:45:24,456 - INFO - Dataset initialized: 37250 test rounds created.
+2025-03-19 00:45:24,456 - INFO - Training round 0 contains 31159 training samples.
+2025-03-19 00:45:24,457 - INFO - Training round 0 contains data from 1975 to 1984.
+2025-03-19 00:45:24,458 - INFO - Creating 97 sequential episodes (T = 12 time steps each).

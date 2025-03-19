@@ -40,11 +40,11 @@ for round_idx in range(num_training_blocks):
                                        data_pipeline.train_future_returns[round_idx],
                                        data_pipeline.train_masks[round_idx])
     val_round_dataset = RoundDataset(data_pipeline.val_sequences[round_idx],
-                                     None,  # if validation future returns aren’t needed
+                                     data_pipeline.val_future_returns[round_idx],
                                      data_pipeline.val_masks[round_idx])
     
     # Train model on this round (train_model_sequential should accept a validation loader too)
-    train_model_sequential(train_round_dataset, model, num_epochs=num_epochs, learning_rate=1e-4,
+    train_model_sequential(train_round_dataset, model, optimizer, num_epochs=num_epochs, learning_rate=1e-4,
                            device=device, plots_dir='plots')
     evaluator = AlphaPortfolioEvaluator(val_round_dataset, model, device=device, G=model_G)
     model_sharpes = evaluator.test_model()         # Tests your deep RL model
@@ -53,7 +53,7 @@ for round_idx in range(num_training_blocks):
     logger.info(f"Model Sharpe ratio on test set: {model_sharpes:.4f}")
 
 # After training on all rounds, evaluate on the test set.
-test_dataset = RoundDataset(data_pipeline.test_sequences, None, data_pipeline.test_masks)
+test_dataset = RoundDataset(data_pipeline.test_sequences, data_pipeline.test_future_returns, data_pipeline.test_masks)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 evaluator = AlphaPortfolioEvaluator(test_dataset, model, device = device, G = model_G)
 model_sharpes = evaluator.test_model()         # Tests your deep RL model

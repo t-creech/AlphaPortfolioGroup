@@ -57,7 +57,6 @@ class AlphaPortfolioEvaluator:
                     state_t = state_seq[:, t, :, :, :]
                     fwd_t   = fwd_seq[:, t, :]
                     mask_t  = mask_seq[:, t, :]
-                    
                     # Forward pass through the model.
                     portfolio_weights, _ = self.model(state_t, mask_t)
                     # Compute period return (assuming B = 1).

@@ -31,7 +31,9 @@ class AlphaPortfolioData(Dataset):
         self.train_future_returns = []
         self.train_masks = []
         self.val_masks = []
+        self.val_future_returns = []
         self.test_masks = []
+        self.test_future_returns = []
         self.merged = self._load_wrds_data()
         self.merged["date"] = pd.to_datetime(self.merged["date"])
         self.test_year_start = test_year_start
@@ -44,24 +46,26 @@ class AlphaPortfolioData(Dataset):
         self.normalized_test_data = self._normalize_test_data(normalization_params)
         logger.info(f"Dataset initialized: {len(self.normalized_train_data)} training rounds created.")
         logger.info(f"Dataset initialized: {len(self.normalized_val_data)} validation rounds created.")
-        logger.info(f"Dataset initialized: {len(self.normalized_test_data)} test rounds created.")
+        logger.info(f"Dataset initialized: {len(self.normalized_test_data)} test rows created.")
         for i in range(len(self.normalized_train_data)):
             logger.info(f"Training round {i} contains {len(self.normalized_train_data[i])} training samples.")
             logger.info(f"Training round {i} contains data from {self.normalized_train_data[i]['date'].dt.year.min()} to {self.normalized_train_data[i]['date'].dt.year.max()}.")
-            sequences, future_returns, masks = self._train_create_sequences(self.normalized_train_data[i])
+            sequences, future_returns, masks = self._create_sequences(self.normalized_train_data[i])
             self.train_sequences.append(sequences)
             self.train_future_returns.append(future_returns)
             self.train_masks.append(masks)
         for i in range(len(self.normalized_val_data)):
             logger.info(f"Validation round {i} contains {len(self.normalized_val_data[i])} training samples.")
             logger.info(f"Validation round {i} contains data from {self.normalized_val_data[i]['date'].dt.year.min()} to {self.normalized_val_data[i]['date'].dt.year.max()}.")
-            sequences, masks = self._test_create_sequences(self.normalized_val_data[i])
+            sequences, future_returns, masks = self._create_sequences(self.normalized_val_data[i])
             self.val_sequences.append(sequences)
+            self.val_future_returns.append(future_returns)
             self.val_masks.append(masks)
-        sequences, masks = self._test_create_sequences(self.normalized_test_data)
+        sequences, future_returns, masks = self._create_sequences(self.normalized_test_data)
         logger.info(f"Test round contains {len(self.normalized_test_data)} training samples.")
         logger.info(f"Test round contains data from {self.normalized_test_data['date'].dt.year.min()} to {self.normalized_test_data['date'].dt.year.max()}.")
         self.test_sequences = sequences
+        self.test_future_returns = future_returns
         self.test_masks = masks
 
     def _load_wrds_data(self):
@@ -139,7 +143,7 @@ class AlphaPortfolioData(Dataset):
               data[column] = (data[column] - mean) / std
       return data
 
-    def _train_create_sequences(self, data):
+    def _create_sequences(self, data):
         """
         Creates sequential episodes for RL.
         
@@ -209,66 +213,6 @@ class AlphaPortfolioData(Dataset):
         logger.info(f"Created future_returns tensor shape: {future_returns_tensor.shape}")
         logger.info(f"Created masks tensor shape: {masks_tensor.shape}")
         return sequences_tensor, future_returns_tensor, masks_tensor
-      
-    def _test_create_sequences(self, data):
-        """
-        Creates sequential episodes for RL.
-        
-        For each episode, we use a sliding window over the sorted unique dates.
-        Let
-        T = self.T (number of rebalancing steps per episode).
-        For an episode starting at index i, for each time step t (0 <= t < T):
-          - The state is the data from date index i+t to i+t+lookback-1.
-          - The one-month forward return is taken from date index i+t+lookback.
-        """
-        lookback = self.lookback
-        T = self.T
-        unique_dates = pd.to_datetime(data['date'].unique())
-        unique_dates_sorted = np.sort(unique_dates)
-        num_features = self.num_features  # Here we use: 'permno', 'ret', 'prc', 'vol', 'mktcap', 'saleq'
-        
-        episodes_states = []
-        episodes_masks = []
-        num_episodes = len(unique_dates_sorted) - (2 * lookback) + 1
-        logger.info(f"Creating {num_episodes} sequential episodes (T = {T} time steps each).")
-        for start_idx in tqdm(range(num_episodes), desc="Creating sequential episodes"):
-            episode_states = []  # shape: (T, global_max_assets, lookback, num_features)
-            episode_masks = []   # shape: (T, global_max_assets)
-            for t in range(T):
-                state_start = start_idx + t
-                state_end = state_start + lookback
-                fwd_index = state_end
-                step_states = np.zeros((self.global_max_assets, lookback, num_features))
-                step_fwd = np.zeros((self.global_max_assets,))
-                step_mask = np.zeros((self.global_max_assets,), dtype=bool)
-                for permno in self.unique_permnos:
-                    idx = self.permno_to_idx[permno]
-                    hist_data = data[
-                        (data['permno'] == permno) &
-                        (data['date'] >= unique_dates_sorted[state_start]) &
-                        (data['date'] < unique_dates_sorted[state_end])
-                    ].sort_values('date')
-                    fwd_data = data[
-                        (data['permno'] == permno) &
-                        (data['date'] == unique_dates_sorted[fwd_index])
-                    ]
-                    if len(hist_data) == lookback and len(fwd_data) == 1:
-                        features_list = [col for col in hist_data.columns if col not in ['date']]
-                        features = hist_data[features_list].values
-                        step_states[idx] = features
-                        step_fwd[idx] = fwd_data['ret'].values[0]
-                        step_mask[idx] = True
-                episode_states.append(step_states)
-                episode_masks.append(step_mask)
-            episode_states = np.array(episode_states)   # (T, global_max_assets, lookback, num_features)
-            episode_masks = np.array(episode_masks)       # (T, global_max_assets)
-            episodes_states.append(episode_states)
-            episodes_masks.append(episode_masks)
-        sequences_tensor = torch.tensor(np.array(episodes_states), dtype=torch.float32)
-        masks_tensor = torch.tensor(np.array(episodes_masks), dtype=torch.bool)
-        logger.info(f"Created sequences tensor shape: {sequences_tensor.shape}")
-        logger.info(f"Created masks tensor shape: {masks_tensor.shape}")
-        return sequences_tensor, masks_tensor
 
 
 class RoundDataset(Dataset):
