@@ -5,7 +5,7 @@ from data_pipeline import *
 
 
 # ------------------------- TRAINING PIPELINE -------------------------
-def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, device='cpu', batch_size=1, plots_dir='plots'):
+def train_model_sequential(dataset, model, num_epochs=10, batch_size=1, plots_dir='plots'):
     """
     Each episode consists of T sequential rebalancing steps.
     For each step t:
@@ -16,8 +16,6 @@ def train_model_sequential(dataset, model, num_epochs=10, learning_rate=1e-4, de
     After T steps, compute the Sharpe ratio of the T monthly returns as the delayed reward.
     """
     os.makedirs(plots_dir, exist_ok=True)
-    model.to(device)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     model.train()
     
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
