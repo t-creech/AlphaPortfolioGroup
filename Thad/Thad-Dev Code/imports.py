@@ -31,8 +31,3 @@ def setup_file_logger(log_file):
 log_filename = "training.log"
 setup_file_logger(log_filename)
 logger.info("File logger initialized.")
-
-# -------------------------
-# Establish WRDS Connection
-# -------------------------
-db = wrds.Connection()  # Ensure your WRDS credentials/environment are set up
