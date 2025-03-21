@@ -68,10 +68,10 @@ class AlphaPortfolioEvaluator:
                 std_return = monthly_returns.std()
                 sharpe_ratio = mean_return / (std_return + 1e-6)
                 all_episode_sharpes.append(sharpe_ratio.item())
-                print(f"Episode {episode_idx}: Sharpe Ratio = {sharpe_ratio.item():.4f}")
+                logger.info(f"Episode {episode_idx}: Sharpe Ratio = {sharpe_ratio.item():.4f}")
         
         avg_sharpe = np.mean(all_episode_sharpes)
-        print(f"Average Sharpe Ratio over test episodes: {avg_sharpe:.4f}")
+        logger.info(f"Average Sharpe Ratio over test episodes: {avg_sharpe:.4f}")
         return all_episode_sharpes
 
     @staticmethod
@@ -175,11 +175,11 @@ class AlphaPortfolioEvaluator:
                     weights_full[valid_idx] = weights_valid
                     port_return = np.dot(weights_full, month_returns)
                 all_portfolio_returns.append(port_return)
-            print(f"Processed episode {episode_idx+1} with {T} months.")
+            logger.info(f"Processed episode {episode_idx+1} with {T} months.")
         
         all_portfolio_returns = np.array(all_portfolio_returns)
         overall_sharpe = self.compute_sharpe_ratio(all_portfolio_returns)
-        print(f"Overall baseline Sharpe ratio across all months: {overall_sharpe:.4f}")
+        logger.info(f"Overall baseline Sharpe ratio across all months: {overall_sharpe:.4f}")
         return all_portfolio_returns, overall_sharpe
 
 # Example usage:

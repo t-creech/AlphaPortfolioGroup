@@ -51,22 +51,23 @@ class AlphaPortfolioData(Dataset):
             logger.info(f"Training round {i} contains {len(self.normalized_train_data[i])} training samples.")
             logger.info(f"Training round {i} contains data from {self.normalized_train_data[i]['date'].dt.year.min()} to {self.normalized_train_data[i]['date'].dt.year.max()}.")
             sequences, future_returns, masks = self._create_sequences(self.normalized_train_data[i])
-            self.train_sequences.append(sequences)
-            self.train_future_returns.append(future_returns)
-            self.train_masks.append(masks)
+            torch.save(sequences, f"Data/Train/sequences_{i}.pt")
+            torch.save(future_returns, f"Data/Train/future_returns_{i}.pt")
+            torch.save(masks, f"Data/Train/masks_{i}.pt")
         for i in range(len(self.normalized_val_data)):
             logger.info(f"Validation round {i} contains {len(self.normalized_val_data[i])} training samples.")
             logger.info(f"Validation round {i} contains data from {self.normalized_val_data[i]['date'].dt.year.min()} to {self.normalized_val_data[i]['date'].dt.year.max()}.")
             sequences, future_returns, masks = self._create_sequences(self.normalized_val_data[i])
-            self.val_sequences.append(sequences)
-            self.val_future_returns.append(future_returns)
-            self.val_masks.append(masks)
+            torch.save(sequences, f"Data/Val/sequences_{i}.pt")
+            torch.save(future_returns, f"Data/Val/future_returns_{i}.pt")
+            torch.save(masks, f"Data/Val/masks_{i}.pt")
         sequences, future_returns, masks = self._create_sequences(self.normalized_test_data)
         logger.info(f"Test round contains {len(self.normalized_test_data)} training samples.")
         logger.info(f"Test round contains data from {self.normalized_test_data['date'].dt.year.min()} to {self.normalized_test_data['date'].dt.year.max()}.")
-        self.test_sequences = sequences
-        self.test_future_returns = future_returns
-        self.test_masks = masks
+        torch.save(sequences, "Data/Test/sequences.pt")
+        torch.save(future_returns, "Data/Test/future_returns.pt")
+        torch.save(masks, "Data/Test/masks.pt")
+        logger.info("Data saved to disk.")
 
     def _load_wrds_data(self):
         first_data = pd.read_csv('Data/cleanedFinalData_1975-1984.csv')
@@ -103,7 +104,7 @@ class AlphaPortfolioData(Dataset):
       features_to_not_normalize = ['permno', 'ret', 'date']
       for i in range(len(data)):
           data[i] = data[i].drop(columns=['gvkey', 'year', 'rdq'])
-          num_features = len(data[i].columns) - 1
+          num_features = len(data[i].columns) - 2 #subtracting 2 for permno and date
           normalization_params[i] = {}
           for column in data[i].columns:
               if column not in features_to_not_normalize:
@@ -163,24 +164,27 @@ class AlphaPortfolioData(Dataset):
         unique_dates = pd.to_datetime(data['date'].unique())
         unique_dates_sorted = np.sort(unique_dates)
         num_features = self.num_features 
+        unique_permnos = sorted(data['permno'].unique())
+        max_assets = len(unique_permnos)
+        permno_to_idx = {permno: idx for idx, permno in enumerate(unique_permnos)}
         episodes_states = []
         episodes_fwd = []
         episodes_masks = []
         num_episodes = len(unique_dates_sorted) - (2 * lookback) + 1
         logger.info(f"Creating {num_episodes} sequential episodes (T = {T} time steps each).")
         for start_idx in tqdm(range(num_episodes), desc="Creating sequential episodes"):
-            episode_states = []  # shape: (T, global_max_assets, lookback, num_features)
-            episode_fwd = []     # shape: (T, global_max_assets)
-            episode_masks = []   # shape: (T, global_max_assets)
+            episode_states = []  # shape: (T, max_assets, lookback, num_features)
+            episode_fwd = []     # shape: (T, max_assets)
+            episode_masks = []   # shape: (T, max_assets)
             for t in range(T):
                 state_start = start_idx + t
                 state_end = state_start + lookback
                 fwd_index = state_end
-                step_states = np.zeros((self.global_max_assets, lookback, num_features))
-                step_fwd = np.zeros((self.global_max_assets,))
-                step_mask = np.zeros((self.global_max_assets,), dtype=bool)
-                for permno in self.unique_permnos:
-                    idx = self.permno_to_idx[permno]
+                step_states = np.zeros((max_assets, lookback, num_features))
+                step_fwd = np.zeros((max_assets,))
+                step_mask = np.zeros((max_assets,), dtype=bool)
+                for permno in unique_permnos:
+                    idx = permno_to_idx[permno]
                     hist_data = data[
                         (data['permno'] == permno) &
                         (data['date'] >= unique_dates_sorted[state_start]) &

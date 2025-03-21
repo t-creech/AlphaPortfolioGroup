@@ -89,7 +89,7 @@ class AlphaPortfolioModel(nn.Module):
         for i in range(B):
             scores_i = winner_scores[i]
             valid_idx = mask[i].nonzero(as_tuple=False).squeeze(-1)
-            logger.info(f"[Model] Batch {i}: valid asset indices: {valid_idx}")
+            # logger.info(f"[Model] Batch {i}: valid asset indices: {valid_idx}")
             if valid_idx.numel() == 0:
                 portfolio_weights.append(torch.zeros_like(scores_i))
                 continue
@@ -115,7 +115,7 @@ class AlphaPortfolioModel(nn.Module):
             b = torch.zeros_like(scores_i)
             b[top_indices] = long_weights
             b[bottom_indices] = -short_weights
-            logger.info(f"[Model] Batch {i}: portfolio weights: {b}")
+            # logger.info(f"[Model] Batch {i}: portfolio weights: {b}")
             portfolio_weights.append(b)
         portfolio_weights = torch.stack(portfolio_weights, dim=0)
         logger.info(f"[Model] Final portfolio_weights shape: {portfolio_weights.shape}")

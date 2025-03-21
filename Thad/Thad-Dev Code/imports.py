@@ -30,3 +30,11 @@ def setup_file_logger(log_file):
 log_filename = "training.log"
 setup_file_logger(log_filename)
 logger.info("File logger initialized.")
+
+def count_files_in_directory(directory_path):
+    """Counts the number of files in a given directory, excluding subdirectories."""
+    count = 0
+    for path in os.listdir(directory_path):
+        if os.path.isfile(os.path.join(directory_path, path)):
+            count += 1
+    return count

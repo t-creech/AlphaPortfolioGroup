@@ -43,8 +43,8 @@ def train_model_sequential(dataset, model, optimizer, num_epochs=10, batch_size=
                 logger.info(f"[Episode {episode_idx}][Time {t}] state_t shape: {state_t.shape}, fwd_t shape: {fwd_t.shape}")
                 
                 portfolio_weights, winner_scores = model(state_t, mask_t)
-                logger.info(f"[Episode {episode_idx}][Time {t}] portfolio_weights: {portfolio_weights}")
-                logger.info(f"[Episode {episode_idx}][Time {t}] winner_scores: {winner_scores}")
+                #logger.info(f"[Episode {episode_idx}][Time {t}] portfolio_weights: {portfolio_weights}")
+                #logger.info(f"[Episode {episode_idx}][Time {t}] winner_scores: {winner_scores}")
                 
                 period_return = (portfolio_weights * fwd_t).sum(dim=1) # (B,)
                 logger.info(f"[Episode {episode_idx}][Time {t}] period_return: {period_return}")
