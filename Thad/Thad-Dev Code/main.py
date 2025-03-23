@@ -56,9 +56,15 @@ logger.info(f"Test set episodes: {test_sequences.shape[0]}")
 num_features = train_sequences[0].shape[-1]
 model = AlphaPortfolioModel(num_features=num_features, lookback=lookback,
                             d_model=d_model, nhead=nhead, num_encoder_layers=num_encoder_layers, d_attn=d_attn, G=model_G)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-logger.info(f"Using device: {device}")
+# Check if a Metal-compatible GPU is available
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps") # Use "mps" for Apple Metal devices (e.g., M1, M2)
+    logger.info("Using Apple GPU with Metal backend.")
+else:
+    raise SystemExit("No compatible GPU found.")
 model.to(device)
+logger.info(f"Model device: {device}")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Iterative training: for each round, train on its training set and validate on its validation set.
@@ -73,13 +79,14 @@ for round_idx in range(num_training_blocks):
                                      val_future_returns[round_idx],
                                      val_masks[round_idx])
     
+    
     # Train model on this round (train_model_sequential should accept a validation loader too)
-    train_model_sequential(train_round_dataset, model, optimizer, num_epochs=num_epochs, plots_dir='plots', patience=5)
+    train_model_sequential(train_round_dataset, model, optimizer, num_epochs=num_epochs, plots_dir='plots', patience=5, device=device)
     evaluator = AlphaPortfolioEvaluator(val_round_dataset, model, device=device, G=model_G)
     model_sharpes = evaluator.test_model()         # Tests your deep RL model
     baseline_returns, baseline_sharpe = evaluator.evaluate_baseline()  # Baseline evaluation
-    logger.info(f"Baseline Sharpe ratio on test set: {baseline_sharpe:.4f}")
-    logger.info(f"Model Sharpe ratio on test set: {model_sharpes:.4f}")
+    logger.info(f"Baseline Sharpe ratio on test set: {baseline_sharpe: .4f}")
+    logger.info(f"Model Sharpe ratio on test set: {model_sharpes: .4f}")
 
 # After training on all rounds, evaluate on the test set.
 test_dataset = RoundDataset(test_sequences, test_future_returns, test_masks)
@@ -87,5 +94,5 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 evaluator = AlphaPortfolioEvaluator(test_dataset, model, device = device, G = model_G)
 model_sharpes = evaluator.test_model()         # Tests your deep RL model
 baseline_returns, baseline_sharpe = evaluator.evaluate_baseline()  # Baseline evaluation
-logger.info(f"Baseline Sharpe ratio on test set: {baseline_sharpe:.4f}")
-logger.info(f"Model Sharpe ratio on test set: {model_sharpes:.4f}")
+logger.info(f"Baseline Sharpe ratio on test set: {baseline_sharpe: .4f}")
+logger.info(f"Model Sharpe ratio on test set: {model_sharpes: .4f}")

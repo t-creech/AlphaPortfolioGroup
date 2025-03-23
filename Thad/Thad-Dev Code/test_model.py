@@ -72,7 +72,7 @@ class AlphaPortfolioEvaluator:
         
         avg_sharpe = np.mean(all_episode_sharpes)
         logger.info(f"Average Sharpe Ratio over test episodes: {avg_sharpe:.4f}")
-        return all_episode_sharpes
+        return avg_sharpe
 
     @staticmethod
     def compute_sharpe_ratio(returns):

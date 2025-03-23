@@ -107,9 +107,11 @@ class AlphaPortfolioModel(nn.Module):
             
             long_scores = scores_i[top_indices]
             long_weights = torch.softmax(long_scores, dim=0)
+            logger.info(f"[Model] Batch {i}: long_scores: {long_scores}")
             logger.info(f"[Model] Batch {i}: long_weights: {long_weights}")
             short_scores = scores_i[bottom_indices]
             short_weights = torch.softmax(-short_scores, dim=0)
+            logger.info(f"[Model] Batch {i}: short_scores: {short_scores}")
             logger.info(f"[Model] Batch {i}: short_weights: {short_weights}")
             
             b = torch.zeros_like(scores_i)
