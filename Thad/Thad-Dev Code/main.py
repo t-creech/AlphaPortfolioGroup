@@ -62,7 +62,8 @@ if torch.backends.mps.is_available():
     device = torch.device("mps") # Use "mps" for Apple Metal devices (e.g., M1, M2)
     logger.info("Using Apple GPU with Metal backend.")
 else:
-    raise SystemExit("No compatible GPU found.")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info(f"Using device: {device}")
 model.to(device)
 logger.info(f"Model device: {device}")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
