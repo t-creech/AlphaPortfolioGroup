@@ -10,15 +10,15 @@ warnings.filterwarnings("ignore")
 # Hyperparameters
 lookback = 12
 T = 12  # number of rebalancing steps per episode
-model_G = 5  # number of assets selected for long/short in portfolio generation
+model_G = 10  # number of assets selected for long/short in portfolio generation
 batch_size = 1
 num_epochs = 15
 num_training_blocks = 4
 test_year_start = 2015
-d_model = 64
-nhead = 2
+d_model = 256
+nhead = 4
 num_encoder_layers = 2
-d_attn = 2
+d_attn = 64
 learning_rate = 1e-4
 
 # Instantiate data pipeline

@@ -1,0 +1,144 @@
+# config.yaml for AlphaPortfolio with enhanced visualization
+experiment_id: alpha_portfolio_enhanced
+description: AlphaPortfolio with Transformer and RL - Enhanced Visualization
+
+# Paths to directories and data
+paths:
+  # Base output directory for all results
+  output_dir: ./Results/output
+  # Directory for saved models
+  model_dir: ./Results/models
+  # Directory for log files
+  log_dir: ./Results/logs
+  # Directory for plots and visualizations
+  plot_dir: ./Results/plots
+  # Path to the cleaned data file
+  data_path: ./Results/training_data.csv
+
+# Logging configuration
+logging:
+  # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  level: INFO
+  # Whether to log detailed metrics for each episode
+  log_episode_metrics: true
+  # Whether to log detailed metrics for each batch
+  log_batch_metrics: true
+
+# Training parameters
+training:
+  # Number of epochs to train for
+  num_epochs: 2
+  # Batch size
+  batch_size: 8
+  # Number of workers for data loading
+  num_workers: 4
+  # Early stopping patience
+  patience: 5
+  # Learning rate
+  learning_rate: 1e-4
+  # Weight decay
+  weight_decay: 1e-6
+  # Whether to train for all epochs before validation (true), 
+  # or validate after each epoch (false)
+  train_all_epochs_first: true
+  # Maximum number of batches to visualize per epoch (0 = all)
+  max_batches_to_visualize: 0
+  # Maximum number of episodes to visualize per batch (0 = all)
+  max_episodes_to_visualize: 0
+
+# Model parameters
+model:
+  # Number of time steps per episode
+  T: 12
+  # Lookback period for historical data
+  lookback: 12
+  # Model dimension
+  d_model: 32
+  # Number of attention heads
+  nhead: 2
+  # Number of transformer layers
+  num_layers: 1
+  # Number of assets to include in long and short portfolios (G parameter)
+  G: 10
+  # Window size for Sharpe ratio calculation
+  sharpe_window: 12
+
+# Visualization configuration
+visualization:
+  # Whether to generate detailed visualizations
+  detailed: true
+  # DPI for saved figures
+  dpi: 300
+  # Figure format (png, pdf, svg, jpg)
+  format: "png"
+  # Whether to show visualizations on screen (not just save them)
+  show: false
+  # Base color scheme
+  color_scheme: "viridis"
+  # Directory for episode-level visualizations
+  episode_dir: "episodes"
+  # Directory for batch-level visualizations
+  batch_dir: "batches"
+  # Directory for epoch-level visualizations
+  epoch_dir: "epochs"
+  # Whether to generate interactive HTML visualizations
+  interactive: false
+  # Whether to include summary statistics in visualizations
+  include_stats: true
+  # Whether to generate heatmaps for asset allocations
+  heatmaps: true
+  # Whether to generate distribution plots
+  distributions: true
+  # Whether to generate time series plots
+  time_series: true
+  # Whether to generate correlation matrices
+  correlations: true
+
+# Training cycles
+cycles:
+  - cycle_idx: 0
+    train_start: "1975-01-01"
+    train_end: "1979-12-31"
+    test_start: "1980-01-01"
+    test_end: "1984-12-31"
+  # - cycle_idx: 1
+  #   train_start: "1980-01-01"
+  #   train_end: "1984-12-31"
+  #   validate_start: "1985-01-01"
+  #   validate_end: "1989-12-31"
+  # - cycle_idx: 2
+  #   train_start: "1995-01-01"
+  #   train_end: "2004-12-31"
+  #   validate_start: "2005-01-01"
+  #   validate_end: "2010-12-31"
+  # - cycle_idx: 3
+  #   train_start: "2005-01-01"
+  #   train_end: "2014-12-31"
+  #   validate_start: "2011-01-01"
+  #   validate_end: "2014-12-31"
+
+# Test configuration
+test:
+  # Path to test data (if different from training data)
+  data_path: ./Results/testing_data.csv  # Uses the same as training if null
+  # Test period
+  test_start: "2011-01-01"
+  test_end: "2018-12-31"
+  # Whether to compare against market benchmark
+  compare_benchmark: true
+  # Benchmark ticker (if comparing)
+  benchmark_ticker: "SPY"
+  # Number of bootstrapping iterations for risk metrics
+  bootstrap_iterations: 1000
+  # Whether to generate visualizations at the episode level
+  episode_visualizations: true
+  # Whether to generate visualizations at the batch level
+  batch_visualizations: true
+  # Whether to perform historical backtesting
+  historical_backtest: true
+  # Whether to perform transaction cost analysis
+  transaction_cost_analysis: true
+  # Transaction cost rate for analysis
+  transaction_cost_rate: 0.01
+  # Whether to generate a comprehensive performance report
+  generate_report: true

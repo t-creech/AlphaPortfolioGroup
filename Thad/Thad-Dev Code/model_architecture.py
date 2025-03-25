@@ -24,7 +24,7 @@ class AlphaPortfolioModel(nn.Module):
         self.input_projection = nn.Linear(num_features, d_model)
         logger.info(f"Input projection layer: {self.input_projection}")
 
-        encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=1024, dropout=0.2, activation='relu')
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
         logger.info("Transformer encoder initialized.")
 
